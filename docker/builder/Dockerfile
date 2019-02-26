@@ -13,12 +13,13 @@ RUN yum install -y centos-release-scl-rh && \
 ENV PATH=/opt/rh/devtoolset-7/root/usr/bin/:$PATH
 
 # install ceph build dependencies
-RUN yum install -y git bc python-pip && \
+RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm && \
+    yum install -y git2u bc python-pip && \
     git clone --branch $CEPH_GIT_REF --depth=1 $CEPH_GIT_REPO && \
     cd ceph/ && \
     ./install-deps.sh && \
     yum erase -y cmake && \
-    yum install -y cmake3 && \
+    yum install -y cmake3 ccache && \
     yum clean all -y && \
     cd ../ && \
     rm -rf ceph/
