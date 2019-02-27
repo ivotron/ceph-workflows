@@ -50,7 +50,7 @@ if [ -z "$(ls -A ./)" ] || [ "$CEPH_CMAKE_RECONFIGURE" == "true" ] ; then
   cmake3 $CEPH_CMAKE_FLAGS ..
 fi
 
-make -j$CEPH_BUILD_THREADS vstart
+make -j$CEPH_BUILD_THREADS $@
 
 if [ "$CEPH_INSTALL_HEADERS" == "true" ] ; then
   mkdir --parents $INSTALL_DIR/usr/include/rados/
