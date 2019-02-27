@@ -1,5 +1,4 @@
 workflow "build docker images" {
-  on = "push"
   resolves = "end"
 }
 
@@ -13,11 +12,6 @@ action "build imager" {
   args = "build -t blkswanio/ceph-imager:latest ./docker/imager"
 }
 
-action "build ceph-ansible" {
-  uses = "actions/docker/cli@master"
-  args = "build -t blkswanio/ceph-ansible:v3.2.7 ./docker/ansible"
-}
-
 action "docker login" {
   uses = "actions/docker/login@master"
   secrets = [
@@ -26,27 +20,26 @@ action "docker login" {
   ]
   needs = [
     "build builder",
-    "build imager",
-    "build ceph-ansible"
+    "build imager"
   ]
 }
 
-action "push ceph-builder" {
+action "push builder" {
   needs = "docker login"
   uses = "actions/docker/cli@master"
   args = "push blkswanio/ceph-builder:mimic"
 }
 
-action "push ceph-ansible" {
+action "push imager" {
   needs = "docker login"
   uses = "actions/docker/cli@master"
-  args = "push blkswanio/ceph-ansible:v3.2.7"
+  args = "push blkswanio/ceph-imager:latest"
 }
 
 action "end" {
   needs = [
-    "push ceph-builder"
-    "push ceph-ansible"
+    "push builder",
+    "push imager"
   ]
   uses = "actions/docker/cli@master"
   args = "version"
