@@ -5,7 +5,7 @@ if [ -z $CEPH_SRC_DIR ]; then
   echo "Expecting CEPH_SRC_DIR variable"
   exit 1
 fi
-if [ -z "$CEPH_IMAGE_NAME" ] ; then
+if [ -z "$CEPH_OUTPUT_IMAGE" ] ; then
   echo "ERROR: expecting CEPH_IMAGE variable"
   exit 1
 fi
@@ -27,13 +27,22 @@ fi
 
 docker pull $CEPH_BASE_DAEMON_IMAGE
 
+# remove in case it was left from a previous execution
 docker rm cephbase || true
+
+# copy built files into a new instance of the base image
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BASE_DAEMON_IMAGE -c "cp $INSTALL_DIR/* /usr/bin/"
-docker commit --change='ENTRYPOINT ["/entrypoint.sh"]' cephbase $CEPH_IMAGE_NAME &> /dev/null
-docker rm cephbase || true
 
-echo "created image $CEPH_IMAGE_NAME"
+# create image with the new files
+docker commit \
+  --change='ENTRYPOINT ["/opt/ceph-container/bin/entrypoint.sh"]' \
+  cephbase $CEPH_OUTPUT_IMAGE
+
+# cleanup
+docker rm cephbase
+
+echo "created image $CEPH_OUTPUT_IMAGE"
