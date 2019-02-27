@@ -13,10 +13,6 @@ if [ -z "$CEPH_BASE_DAEMON_IMAGE" ] ; then
   echo "ERROR: expecting CEPH_BASE_IMAGE variable"
   exit 1
 fi
-if [ ! -d "$CEPH_SRC_DIR" ]; then
-  echo "Expecting CEPH_SRC_DIR variable"
-  exit 1
-fi
 if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   echo "Expecting CEPH_SRC_DIR at $GITHUB_WORKSPACE"
   exit 1
@@ -35,7 +31,7 @@ docker rm cephbase || true
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
-  --volume $INSTALL_DIR:$INSTALL_DIR
+  --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BASE_DAEMON_IMAGE -c "cp $INSTALL_DIR/* /usr/bin/"
 docker commit --change='ENTRYPOINT ["/entrypoint.sh"]' cephbase $CEPH_IMAGE_NAME &> /dev/null
 docker rm cephbase || true
