@@ -46,8 +46,8 @@ docker run \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BUILDER_IMAGE \
-    -c "cp -r $INSTALL_DIR/bin/* /usr/local/bin/ && \
-        cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && \
+    -c "cp -r $INSTALL_DIR/bin/* /usr/bin/ && \
+        cp -r $INSTALL_DIR/lib/* /usr/lib/ && \
         mkdir -p /opt/ceph-container/bin /etc/ceph && \
         cp -r $INSTALL_DIR/daemon/* /opt/ceph-container/bin/ && \
         echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
