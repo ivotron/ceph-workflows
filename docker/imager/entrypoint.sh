@@ -50,7 +50,7 @@ docker run \
 
 # commit the above change so that we obtain a new image
 docker commit \
-  --change='ENTRYPOINT ["/opt/ceph-container/bin/entrypoint.sh"]' \
+  --change='ENTRYPOINT ["/usr/bin/entrypoint.sh"]' \
   cephbase $CEPH_OUTPUT_IMAGE
 
 # cleanup
