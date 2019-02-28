@@ -33,8 +33,6 @@ docker run --rm \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   ceph/daemon:latest-bis-master \
     -c "cp -r /opt/ceph-container/bin/* $INSTALL_DIR/daemon/"
-# remove chown
-sed -i 's/.*chown.*//' $INSTALL_DIR/daemon/*
 
 # ensure we have the builder image at the right version
 docker pull $CEPH_BUILDER_IMAGE
@@ -53,7 +51,8 @@ docker run \
         mkdir -p /opt/ceph-container/bin /etc/ceph && \
         cp -r $INSTALL_DIR/daemon/* /opt/ceph-container/bin/ && \
         echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
-        ldconfig"
+        ldconfig && \
+        useradd -r -s /usr/sbin/nologin ceph"
 
 # commit the above change so that we obtain a new image
 docker commit \
