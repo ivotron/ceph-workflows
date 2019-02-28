@@ -43,7 +43,7 @@ function create_image {
     --entrypoint=/bin/bash \
     --volume $TARGET_PATH:$TARGET_PATH \
     $BASE_IMAGE \
-      -c "cd $TARGET_PATH && cp $delta_bin /usr/bin/ && cp -r $delta_lib /usr/lib/"
+      -c "cd $TARGET_PATH && cp $delta_bin /usr/bin/ && cp -r --parents $delta_lib /usr/lib/"
 
   # commit the above change so that we obtain a new image
   docker commit \
@@ -68,7 +68,7 @@ fi
 docker pull $CEPH_BASE_DAEMON_IMAGE
 
 # create base image and directory for obtaining deltas
-if [ ! -d $INSTALL_DIR/base ] || [ $CEPH_REBUILD_BASE == "true" ] ; then
+if [ ! -d $INSTALL_DIR/base ] || [ "$CEPH_REBUILD_BASE" == "true" ] ; then
   rm -rf $INSTALL_DIR/base
 
   mkdir -p $INSTALL_DIR/base/bin  $INSTALL_DIR/base/lib
