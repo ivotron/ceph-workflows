@@ -36,7 +36,7 @@ docker run \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BASE_DAEMON_IMAGE \
-    -c "cp -r $INSTALL_DIR/bin/* /usr/bin/ && cp -r $INSTALL_DIR/lib/* /usr/lib64/ceph/ && ldconfig"
+    -c "cp -r $INSTALL_DIR/bin/* /usr/bin/ && cp -r $INSTALL_DIR/lib/* /usr/lib64/ceph/ && echo '/usr/lib64/ceph/' > /etc/ld.so.conf.d/ceph.conf && ldconfig"
 
 # commit the above change so that we obtain a new image
 docker commit \
