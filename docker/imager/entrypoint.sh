@@ -9,8 +9,8 @@ if [ -z "$CEPH_OUTPUT_IMAGE" ] ; then
   echo "ERROR: expecting CEPH_IMAGE variable"
   exit 1
 fi
-if [ -z "$CEPH_BASE_DAEMON_IMAGE" ] ; then
-  echo "ERROR: expecting CEPH_BASE_DAEMON_IMAGE variable"
+if [ -z "$CEPH_BUILDER_IMAGE" ] ; then
+  echo "ERROR: expecting CEPH_BUILDER_IMAGE variable"
   exit 1
 fi
 if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
@@ -25,7 +25,17 @@ if [ -z "$(ls -A $INSTALL_DIR/bin)" ]; then
   exit 1
 fi
 
-docker pull $CEPH_BASE_DAEMON_IMAGE
+# download daemon scripts
+mkdir $INSTALL_DIR/daemon
+docker pull ceph/daemon:latest-bis-master
+docker run --rm \
+  --entrypoint=/bin/bash \
+  --volume $INSTALL_DIR:$INSTALL_DIR \
+  ceph/daemon:latest-bis-master \
+    -c "cp -r /opt/ceph-container/bin/* $INSTALL_DIR/daemon/"
+
+# ensure we have the builder image at the right version
+docker pull $CEPH_BUILDER_IMAGE
 
 # remove in case it was left from a previous execution
 docker rm cephbase || true
@@ -36,7 +46,7 @@ docker run \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BASE_DAEMON_IMAGE \
-    -c "rm -fr /lib64/ceph/ && cp -r $INSTALL_DIR/bin/* /usr/bin/ && cp -r $INSTALL_DIR/lib/* /lib64/ && echo '/lib64/' > /etc/ld.so.conf.d/ceph.conf && ldconfig"
+    -c "cp -r $INSTALL_DIR/bin/* /usr/local/bin/ && cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && cp -r $INSTALL_DIR/daemon/* /usr/bin/"
 
 # commit the above change so that we obtain a new image
 docker commit \

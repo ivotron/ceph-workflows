@@ -1,6 +1,6 @@
 FROM docker:stable
 
-RUN apk --no-cache add bash rsync
+RUN apk --no-cache add bash git
 
 COPY entrypoint.sh /entrypoint.sh
 
