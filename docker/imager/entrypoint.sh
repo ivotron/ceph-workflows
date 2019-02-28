@@ -33,6 +33,8 @@ docker run --rm \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   ceph/daemon:latest-bis-master \
     -c "cp -r /opt/ceph-container/bin/* $INSTALL_DIR/daemon/"
+# remove chown
+sed -i 's/.*chown.*//' $INSTALL_DIR/daemon/*
 
 # ensure we have the builder image at the right version
 docker pull $CEPH_BUILDER_IMAGE
