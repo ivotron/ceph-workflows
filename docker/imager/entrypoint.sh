@@ -26,7 +26,7 @@ if [ -z "$(ls -A $INSTALL_DIR/bin)" ]; then
 fi
 
 # download daemon scripts
-mkdir $INSTALL_DIR/daemon
+mkdir -p $INSTALL_DIR/daemon
 docker pull ceph/daemon:latest-bis-master
 docker run --rm \
   --entrypoint=/bin/bash \
