@@ -26,7 +26,7 @@ if [ -z "$(ls -A $INSTALL_DIR/bin)" ]; then
 fi
 
 # download daemon scripts
-mkdir -p $INSTALL_DIR/daemon
+mkdir $INSTALL_DIR/daemon
 docker pull ceph/daemon:latest-bis-master
 docker run --rm \
   --entrypoint=/bin/bash \
@@ -46,11 +46,14 @@ docker run \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
   $CEPH_BUILDER_IMAGE \
-    -c "cp -r $INSTALL_DIR/bin/* /usr/local/bin/ && cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && cp -r $INSTALL_DIR/daemon/* /usr/bin/"
+    -c "cp -r $INSTALL_DIR/bin/* /usr/local/bin/ && \
+        cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && \
+        cp -r $INSTALL_DIR/daemon/* /opt/ceph-container/bin/ && \
+        echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment"
 
 # commit the above change so that we obtain a new image
 docker commit \
-  --change='ENTRYPOINT ["/usr/bin/entrypoint.sh"]' \
+  --change='ENTRYPOINT ["/opt/ceph-container/bin/entrypoint.sh"]' \
   cephbase $CEPH_OUTPUT_IMAGE
 
 # cleanup
