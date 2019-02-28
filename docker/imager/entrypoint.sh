@@ -10,7 +10,7 @@ if [ -z "$CEPH_OUTPUT_IMAGE" ] ; then
   exit 1
 fi
 if [ -z "$CEPH_BASE_DAEMON_IMAGE" ] ; then
-  echo "ERROR: expecting CEPH_BASE_IMAGE variable"
+  echo "ERROR: expecting CEPH_BASE_DAEMON_IMAGE variable"
   exit 1
 fi
 if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
@@ -18,9 +18,9 @@ if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   exit 1
 fi
 
-INSTALL_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/bin
+INSTALL_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/
 
-if [ -z "$(ls -A $INSTALL_DIR)" ]; then
+if [ -z "$(ls -A $INSTALL_DIR/bin)" ]; then
   echo "Looks like $INSTALL_DIR is empty."
   exit 1
 fi
@@ -35,9 +35,10 @@ docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
-  $CEPH_BASE_DAEMON_IMAGE -c "cp $INSTALL_DIR/* /usr/bin/"
+  $CEPH_BASE_DAEMON_IMAGE \
+    -c "cp $INSTALL_DIR/bin/* /usr/bin/ && cp $INSTALL_DIR/lib/* /usr/lib"
 
-# create image with the new files
+# commit the above change so that we obtain a new image
 docker commit \
   --change='ENTRYPOINT ["/opt/ceph-container/bin/entrypoint.sh"]' \
   cephbase $CEPH_OUTPUT_IMAGE
