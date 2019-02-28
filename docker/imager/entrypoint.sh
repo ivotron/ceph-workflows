@@ -52,7 +52,8 @@ docker run \
         cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && \
         mkdir -p /opt/ceph-container/bin /etc/ceph && \
         cp -r $INSTALL_DIR/daemon/* /opt/ceph-container/bin/ && \
-        echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment"
+        echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
+        ldconfig"
 
 # commit the above change so that we obtain a new image
 docker commit \
