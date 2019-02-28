@@ -45,7 +45,7 @@ docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
   --volume $INSTALL_DIR:$INSTALL_DIR \
-  $CEPH_BASE_DAEMON_IMAGE \
+  $CEPH_BUILDER_IMAGE \
     -c "cp -r $INSTALL_DIR/bin/* /usr/local/bin/ && cp -r $INSTALL_DIR/lib/* /usr/local/lib/ && cp -r $INSTALL_DIR/daemon/* /usr/bin/"
 
 # commit the above change so that we obtain a new image
