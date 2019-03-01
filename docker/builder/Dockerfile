@@ -8,7 +8,7 @@ RUN apt update && \
     git clone --branch $CEPH_GIT_REF --depth=1 $CEPH_GIT_REPO && \
     cd ceph/ && \
     ./install-deps.sh && \
-    apt install ccache && \
+    apt install ccache python-prettytable python-requests && \
     cd ../ && \
     rm -rf ceph/ && \
     apt autoclean && \
