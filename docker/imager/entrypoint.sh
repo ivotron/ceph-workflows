@@ -56,7 +56,7 @@ docker run \
      mkdir -p /opt/ceph-container/bin /etc/ceph && \
      cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
      perl -0777 -i.original -pe 's/.*bootstrap_mon\\n.*bootstrap_mgr/  bootstrap_mon/' /opt/ceph-container/bin/demo.sh && \
-     rm demo /opt/ceph-container/bin/demo.sh.original && \
+     rm /opt/ceph-container/bin/demo.sh.original && \
      sed -i 's/# the mgr is.*/bootstrap_mgr/' /opt/ceph-container/bin/demo.sh && \
      echo '#!/usr/bin/env bash' > new_entrypoint.sh && \
      echo 'export PATH=\$PATH:/opt/ceph-container/bin' >> new_entrypoint.sh && \
