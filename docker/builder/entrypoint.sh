@@ -46,7 +46,7 @@ fi
 mkdir -p build
 cd build
 if [ -z "$(ls -A ./)" ] || [ "$CEPH_CMAKE_RECONFIGURE" == "true" ] ; then
-  cmake3 $CMAKE_INSTALL_PREFIX=/usr/local $CEPH_CMAKE_FLAGS ..
+  cmake $CMAKE_INSTALL_PREFIX=/usr/local $CEPH_CMAKE_FLAGS ..
 fi
 
 make -j$CEPH_BUILD_THREADS $@
