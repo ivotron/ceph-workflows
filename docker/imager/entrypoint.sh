@@ -52,8 +52,8 @@ docker run \
      make -C $BUILD_DIR install && \
      mkdir -p /opt/ceph-container/bin /etc/ceph && \
      cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
-     sed -i 's/bootstrap_mgr//' && \
-     sed -i 's/# the mgr is.*/bootstrap_mgr/' && \
+     sed -i 's/bootstrap_mgr//' /opt/ceph-container/bin/demo.sh && \
+     sed -i 's/# the mgr is.*/bootstrap_mgr/' /opt/ceph-container/bin/demo.sh && \
      echo '#!/usr/bin/env bash' > new_entrypoint.sh && \
      echo 'export PATH=\$PATH:/opt/ceph-container/bin' >> new_entrypoint.sh && \
      echo 'export PYTHONPATH=/usr/lib/python2.7/site-packages/' >> new_entrypoint.sh && \
