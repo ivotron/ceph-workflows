@@ -4,7 +4,7 @@ workflow "build docker images" {
 
 action "build builder" {
   uses = "actions/docker/cli@master"
-  args = "build -t blkswanio/ceph-builder:mimic ./docker/builder"
+  args = "build --build-arg CEPH_GIT_REF=nautilus -t blkswanio/ceph-builder:nautilus ./docker/builder"
 }
 
 action "build imager" {
