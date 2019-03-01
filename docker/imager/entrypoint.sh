@@ -18,7 +18,8 @@ if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   exit 1
 fi
 
-BUILD_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/
+SRC_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR
+BUILD_DIR=$SRC_DIR/build
 
 if [ -z "$(ls -A $BUILD_DIR/bin)" ]; then
   echo "Looks like $BUILD_DIR is empty. Have you compiled yet?"
@@ -44,7 +45,7 @@ docker rm cephbase || true
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
-  --volume $BUILD_DIR:$BUILD_DIR \
+  --volume $SRC_DIR:$SRC_DIR \
   $CEPH_BUILDER_IMAGE -c \
     "rm -f /usr/bin/entrypoint.sh && \
      export PYTHONPATH=/usr/lib/python2.7/site-packages/ && \
