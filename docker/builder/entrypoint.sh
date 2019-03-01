@@ -35,7 +35,6 @@ fi
 
 if [ "$CEPH_CMAKE_CLEAN" == "true" ]; then
   rm -rf build/
-  rm -rf $INSTALL_DIR
 fi
 
 git submodule update --init --recursive
@@ -47,7 +46,7 @@ fi
 mkdir -p build
 cd build
 if [ -z "$(ls -A ./)" ] || [ "$CEPH_CMAKE_RECONFIGURE" == "true" ] ; then
-  cmake3 $CEPH_CMAKE_FLAGS ..
+  cmake3 $CMAKE_INSTALL_PREFIX=/usr/local $CEPH_CMAKE_FLAGS ..
 fi
 
 make -j$CEPH_BUILD_THREADS $@

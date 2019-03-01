@@ -18,21 +18,21 @@ if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   exit 1
 fi
 
-INSTALL_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/
+BUILD_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/
 
-if [ -z "$(ls -A $INSTALL_DIR/bin)" ]; then
-  echo "Looks like $INSTALL_DIR is empty. Have you compiled yet?"
+if [ -z "$(ls -A $BUILD_DIR/bin)" ]; then
+  echo "Looks like $BUILD_DIR is empty. Have you compiled yet?"
   exit 1
 fi
 
 # download daemon scripts
-mkdir -p $INSTALL_DIR/daemon
+mkdir -p $BUILD_DIR/daemon
 docker pull ceph/daemon:latest-bis-master
 docker run --rm \
   --entrypoint=/bin/bash \
-  --volume $INSTALL_DIR:$INSTALL_DIR \
+  --volume $BUILD_DIR:$BUILD_DIR \
   ceph/daemon:latest-bis-master \
-    -c "cp -r /opt/ceph-container/bin/* $INSTALL_DIR/daemon/"
+    -c "cp -r /opt/ceph-container/bin/* $BUILD_DIR/daemon/"
 
 # ensure we have the builder image at the right version
 docker pull $CEPH_BUILDER_IMAGE
@@ -44,15 +44,16 @@ docker rm cephbase || true
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
-  --volume $INSTALL_DIR:$INSTALL_DIR \
-  $CEPH_BUILDER_IMAGE \
-    -c "cp -r $INSTALL_DIR/bin/* /usr/bin/ && \
-        cp -r $INSTALL_DIR/lib/* /usr/lib/ && \
-        mkdir -p /opt/ceph-container/bin /etc/ceph && \
-        cp -r $INSTALL_DIR/daemon/* /opt/ceph-container/bin/ && \
-        echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
-        ldconfig && \
-        useradd -r -s /usr/sbin/nologin ceph"
+  --volume $BUILD_DIR:$BUILD_DIR \
+  $CEPH_BUILDER_IMAGE -c \
+    "rm -f /usr/bin/entrypoint.sh && \
+     cd $BUILD_DIR/ && \
+     make install && \
+     mkdir -p /opt/ceph-container/bin /etc/ceph && \
+     cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
+     echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
+     ldconfig && \
+     useradd -r -s /usr/sbin/nologin ceph"
 
 # commit the above change so that we obtain a new image
 docker commit \
