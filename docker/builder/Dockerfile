@@ -1,28 +1,18 @@
-FROM centos:7.6.1810
+FROM ubuntu:18.04
 
 ARG CEPH_GIT_REPO="https://github.com/ceph/ceph"
-ARG CEPH_GIT_REF="mimic"
+ARG CEPH_GIT_REF="master"
 
-# update gcc
-RUN yum install -y centos-release-scl-rh && \
-    INSTALL_PKGS="devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-gcc-gfortran devtoolset-7-gdb" && \
-    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
-    rpm -V $INSTALL_PKGS && \
-    yum clean all -y
-
-ENV PATH=/opt/rh/devtoolset-7/root/usr/bin/:$PATH
-
-# install ceph build dependencies
-RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm && \
-    yum install -y git2u bc python-pip && \
+RUN apt update && \
+    apt install -y git && \
     git clone --branch $CEPH_GIT_REF --depth=1 $CEPH_GIT_REPO && \
     cd ceph/ && \
     ./install-deps.sh && \
-    yum erase -y cmake && \
-    yum install -y cmake3 ccache && \
-    yum clean all -y && \
+    apt install -y ccache python-prettytable python-requests && \
     cd ../ && \
-    rm -rf ceph/
+    rm -rf ceph/ && \
+    apt autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ADD . /usr/bin/
 

@@ -5,16 +5,12 @@ if [ -z $CEPH_SRC_DIR ]; then
   echo "Expecting CEPH_SRC_DIR variable"
   exit 1
 fi
-if [ -z "$CEPH_IMAGE_NAME" ] ; then
+if [ -z "$CEPH_OUTPUT_IMAGE" ] ; then
   echo "ERROR: expecting CEPH_IMAGE variable"
   exit 1
 fi
-if [ -z "$CEPH_BASE_DAEMON_IMAGE" ] ; then
-  echo "ERROR: expecting CEPH_BASE_IMAGE variable"
-  exit 1
-fi
-if [ ! -d "$CEPH_SRC_DIR" ]; then
-  echo "Expecting CEPH_SRC_DIR variable"
+if [ -z "$CEPH_BUILDER_IMAGE" ] ; then
+  echo "ERROR: expecting CEPH_BUILDER_IMAGE variable"
   exit 1
 fi
 if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
@@ -22,22 +18,61 @@ if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   exit 1
 fi
 
-INSTALL_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR/build/bin
+SRC_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR
+BUILD_DIR=$SRC_DIR/build
 
-if [ -z "$(ls -A $INSTALL_DIR)" ]; then
-  echo "Looks like $INSTALL_DIR is empty."
+if [ -z "$(ls -A $BUILD_DIR/bin)" ]; then
+  echo "Looks like $BUILD_DIR is empty. Have you compiled yet?"
   exit 1
 fi
 
-docker pull $CEPH_BASE_DAEMON_IMAGE
+# download daemon scripts
+mkdir -p $BUILD_DIR/daemon
+docker pull ceph/daemon:latest-bis-master
+docker run --rm \
+  --entrypoint=/bin/bash \
+  --volume $BUILD_DIR:$BUILD_DIR \
+  ceph/daemon:latest-bis-master \
+    -c "cp -r /opt/ceph-container/bin/* $BUILD_DIR/daemon/"
 
+# ensure we have the builder image at the right version
+docker pull $CEPH_BUILDER_IMAGE
+
+# remove in case it was left from a previous execution
 docker rm cephbase || true
+
+# * run make install inside the container
+# * copy ceph-container files
+# * post-process scripts so they work on this environment
+# * properly configure PYTHONPATH
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
-  --volume $INSTALL_DIR:$INSTALL_DIR
-  $CEPH_BASE_DAEMON_IMAGE -c "cp $INSTALL_DIR/* /usr/bin/"
-docker commit --change='ENTRYPOINT ["/entrypoint.sh"]' cephbase $CEPH_IMAGE_NAME &> /dev/null
-docker rm cephbase || true
+  --volume $SRC_DIR:$SRC_DIR \
+  $CEPH_BUILDER_IMAGE -c \
+    "rm -f /usr/bin/entrypoint.sh && \
+     export PYTHONPATH=/usr/lib/python2.7/site-packages/ && \
+     make -C $BUILD_DIR install && \
+     mkdir -p /opt/ceph-container/bin /etc/ceph && \
+     cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
+     perl -0777 -i.original -pe 's/.*bootstrap_mon\\n.*bootstrap_mgr/  bootstrap_mon/' /opt/ceph-container/bin/demo.sh && \
+     rm /opt/ceph-container/bin/demo.sh.original && \
+     sed -i 's/# the mgr is.*/bootstrap_mgr/' /opt/ceph-container/bin/demo.sh && \
+     echo '#!/usr/bin/env bash' > new_entrypoint.sh && \
+     echo 'export PATH=\$PATH:/opt/ceph-container/bin' >> new_entrypoint.sh && \
+     echo 'export PYTHONPATH=/usr/lib/python2.7/site-packages/' >> new_entrypoint.sh && \
+     echo 'source /opt/ceph-container/bin/entrypoint.sh' >> new_entrypoint.sh && \
+     chmod +x new_entrypoint.sh && \
+     mv new_entrypoint.sh /usr/bin && \
+     ldconfig && \
+     useradd -r -s /usr/sbin/nologin ceph"
 
-echo "created image $CEPH_IMAGE_NAME"
+# commit the above change so that we obtain a new image
+docker commit \
+  --change='ENTRYPOINT ["new_entrypoint.sh"]' \
+  cephbase $CEPH_OUTPUT_IMAGE
+
+# cleanup
+docker rm cephbase
+
+echo "created image $CEPH_OUTPUT_IMAGE"
