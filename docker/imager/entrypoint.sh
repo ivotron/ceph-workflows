@@ -48,7 +48,7 @@ docker run \
   $CEPH_BUILDER_IMAGE -c \
     "rm -f /usr/bin/entrypoint.sh && \
      export PYTHONPATH=/usr/lib/python2.7/site-packages/ && \
-     make -c $BUILD_DIR install && \
+     make -C $BUILD_DIR install && \
      mkdir -p /opt/ceph-container/bin /etc/ceph && \
      cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
      echo 'PATH=\$PATH:/opt/ceph-container/bin' > /etc/environment && \
