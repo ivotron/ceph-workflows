@@ -41,7 +41,10 @@ docker pull $CEPH_BUILDER_IMAGE
 # remove in case it was left from a previous execution
 docker rm cephbase || true
 
-# copy built files into a new instance of the base image
+# * run make install inside the container
+# * copy ceph-container files
+# * post-process scripts so they work on this environment
+# * properly configure PYTHONPATH
 docker run \
   --name cephbase \
   --entrypoint=/bin/bash \
@@ -52,7 +55,8 @@ docker run \
      make -C $BUILD_DIR install && \
      mkdir -p /opt/ceph-container/bin /etc/ceph && \
      cp -r $BUILD_DIR/daemon/* /opt/ceph-container/bin/ && \
-     sed -i 's/bootstrap_mgr//' /opt/ceph-container/bin/demo.sh && \
+     perl -0777 -i.original -pe 's/.*bootstrap_mon\\n.*bootstrap_mgr/  bootstrap_mon/' /opt/ceph-container/bin/demo.sh && \
+     rm demo /opt/ceph-container/bin/demo.sh.original && \
      sed -i 's/# the mgr is.*/bootstrap_mgr/' /opt/ceph-container/bin/demo.sh && \
      echo '#!/usr/bin/env bash' > new_entrypoint.sh && \
      echo 'export PATH=\$PATH:/opt/ceph-container/bin' >> new_entrypoint.sh && \
