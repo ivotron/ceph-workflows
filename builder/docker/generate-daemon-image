@@ -5,19 +5,20 @@ if [ -z $CEPH_SRC_DIR ]; then
   echo "Expecting CEPH_SRC_DIR variable"
   exit 1
 fi
-if [ -z "$CEPH_OUTPUT_IMAGE" ] ; then
-  echo "ERROR: expecting CEPH_IMAGE variable"
-  exit 1
-fi
-if [ -z "$CEPH_BUILDER_IMAGE" ] ; then
-  echo "ERROR: expecting CEPH_BUILDER_IMAGE variable"
+if [ -z "$CEPH_OUTPUT_DOCKER_IMAGE" ] ; then
+  echo "ERROR: expecting CEPH_OUTPUT_DOCKER_IMAGE variable"
   exit 1
 fi
 if [ ! -d "$GITHUB_WORKSPACE/$CEPH_SRC_DIR" ]; then
   echo "Expecting CEPH_SRC_DIR at $GITHUB_WORKSPACE"
   exit 1
 fi
+if [ ! -f /builder-image ]; then
+  echo "Expecting /builder-image file"
+  exit 1
+fi
 
+CEPH_BUILDER_IMAGE=$(cat /builder-image)
 SRC_DIR=$GITHUB_WORKSPACE/$CEPH_SRC_DIR
 BUILD_DIR=$SRC_DIR/build
 
@@ -70,9 +71,9 @@ docker run \
 # commit the above change so that we obtain a new image
 docker commit \
   --change='ENTRYPOINT ["new_entrypoint.sh"]' \
-  cephbase $CEPH_OUTPUT_IMAGE
+  cephbase $CEPH_OUTPUT_DOCKER_IMAGE
 
 # cleanup
 docker rm cephbase
 
-echo "created image $CEPH_OUTPUT_IMAGE"
+echo "created image $CEPH_OUTPUT_DOCKER_IMAGE"

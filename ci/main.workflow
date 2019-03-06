@@ -4,12 +4,7 @@ workflow "build docker images" {
 
 action "build builder" {
   uses = "actions/docker/cli@master"
-  args = "build --build-arg CEPH_GIT_REF=nautilus -t blkswanio/ceph-builder:nautilus ./docker/builder"
-}
-
-action "build imager" {
-  uses = "actions/docker/cli@master"
-  args = "build -t blkswanio/ceph-imager:latest ./docker/imager"
+  args = "build --build-arg CEPH_GIT_REF=nautilus -t popperized/ceph-builder:nautilus ./builder/docker"
 }
 
 action "docker login" {
@@ -19,27 +14,19 @@ action "docker login" {
     "DOCKER_PASSWORD"
   ]
   needs = [
-    "build builder",
-    "build imager"
+    "build builder"
   ]
 }
 
 action "push builder" {
   needs = "docker login"
   uses = "actions/docker/cli@master"
-  args = "push blkswanio/ceph-builder:mimic"
-}
-
-action "push imager" {
-  needs = "docker login"
-  uses = "actions/docker/cli@master"
-  args = "push blkswanio/ceph-imager:latest"
+  args = "push popperized/ceph-builder:nautilus"
 }
 
 action "end" {
   needs = [
-    "push builder",
-    "push imager"
+    "push builder"
   ]
   uses = "actions/docker/cli@master"
   args = "version"
