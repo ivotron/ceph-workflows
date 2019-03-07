@@ -94,10 +94,11 @@ cd myproject
 # initialize the repository
 git init
 echo '# My Ceph Project' > README.md
+git add .
 git commit -m 'first commit'
 
 # then we add ceph as a submodule
-git submodule --branch nautilus --depth=1 https://github.com/ceph/ceph
+git submodule add --branch nautilus --depth=1 https://github.com/ceph/ceph
 git add .
 git commit -m 'adds ceph as submodule'
 
