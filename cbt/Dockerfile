@@ -18,4 +18,6 @@ RUN apt update && \
     pip install lxml pyyaml && \
     git clone --depth 1 --branch $CEPH_CBT_VERSION https://github.com/ceph/cbt /cbt
 
-ENTRYPOINT ["/root/entrypoint.sh"]
+ADD entrypoint.sh /
+
+ENTRYPOINT ["/entrypoint.sh"]
