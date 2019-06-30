@@ -1,12 +1,24 @@
 import os
 
-# from geni.aggregate import cloudlab
-from geni.aggregate import protogeni
+# from geni.aggregate import cloudlab as agg
+# from geni.aggregate import apt as agg
+from geni.aggregate import protogeni as agg
 from geni.rspec import pg
 from geni import util
 
 
-def baremetal_node(request, name, img, hardware_type):
+experiment_name = 'ceph-benchmarks'
+img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
+num_osds = 3
+
+# comment/uncomment aggregate imports above accordingly and then replace the
+# site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab) or agg.Apt
+# (apt). Check hardware availability and types at: www.cloudlab.us/resinfo.php
+site = agg.UTAH_PG
+hw_type = 'd430'
+
+
+def add_baremetal_node(request, name, img, hardware_type):
     node = pg.RawPC(name)
     node.disk_image = img
     node.hardware_type = hardware_type
@@ -14,36 +26,30 @@ def baremetal_node(request, name, img, hardware_type):
     return node
 
 
-def link_all_to_all(request, nodes):
-    link = request.LAN("lan")
+def add_lan(request, nodes):
+    lan = request.LAN("lan")
 
-    # create an interface for each node and add it to the link
+    # create an interface for each node and add it to the lan
     for i, n in enumerate(nodes):
         iface = n.addInterface("if1")
         iface.component_id = "eth1"
         iface.addAddress(
             pg.IPv4Address("192.168.1.{}".format(i), "255.255.255.0"))
-        link.addInterface(iface)
+        lan.addInterface(iface)
 
-
-experiment_name = 'ceph-benchmarks'
-img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
-num_osds = 2
 
 request = pg.Request()
 nodes = []
 
 # add mon node to request
-# nodes.append(baremetal_node(request, 'mon', img, 'c6320'))
-nodes.append(baremetal_node(request, 'mon', img, 'd430'))
+nodes.append(add_baremetal_node(request, 'mon', img, hw_type))
 
 # add osd nodes to request
-for n in range(num_osds+1):
-    # nodes.append(baremetal_node(request, 'osd{}'.format(n), img, 'c6320'))
-    nodes.append(baremetal_node(request, 'osd{}'.format(n), img, 'd430'))
+for n in range(num_osds):
+    nodes.append(add_baremetal_node(request, 'osd{}'.format(n), img, hw_type))
 
-# add links to request
-link_all_to_all(request, nodes)
+# add lan to request
+add_lan(request, nodes)
 
 # load context
 ctx = util.loadContext(key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
@@ -51,8 +57,8 @@ ctx = util.loadContext(key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
 # create slice
 util.createSlice(ctx, experiment_name, renew_if_exists=True)
 
-# create sliver on clemson
-manifest = util.createSliver(ctx, protogeni.UTAH_PG, experiment_name, request)
+# create sliver on selected site
+manifest = util.createSliver(ctx, site, experiment_name, request)
 
 # output files: ansible inventory and GENI manifest
 # {
@@ -64,4 +70,3 @@ groups = {
 util.toAnsibleInventory(manifest, groups=groups, hostsfile=outdir+'/hosts')
 manifest.writeXML(outdir+'/manifest.xml')
 # }
-
