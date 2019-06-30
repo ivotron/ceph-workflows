@@ -13,7 +13,7 @@ num_osds = 3
 
 # comment/uncomment aggregate imports above accordingly and then replace the
 # site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab) or agg.Apt
-# (apt). Check hardware availability and types at: www.cloudlab.us/resinfo.php
+# (apt). Check hardware availability and types at www.cloudlab.us/resinfo.php
 site = agg.UTAH_PG
 hw_type = 'd430'
 

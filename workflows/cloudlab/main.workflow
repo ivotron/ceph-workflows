@@ -24,16 +24,16 @@ action "allocate resources" {
   secrets = ["GENI_KEY_PASSPHRASE"]
 }
 
-action "build packages" {
-  uses = "popperized/deb@master"
-  env = {
-    DEB_PROJECT_DIR = "ceph/"
-    DEB_INSTALL_DEPS_SCRIPT = "scripts/install_deps.sh",
-  }
-}
+#action "build packages" {
+#  uses = "popperized/deb@master"
+#  env = {
+#    DEB_PROJECT_DIR = "ceph/"
+#    DEB_INSTALL_DEPS_SCRIPT = "scripts/install_deps.sh",
+#  }
+#}
 
 action "deploy ceph" {
-  needs = ["build packages", "allocate resources"]
+  needs = ["allocate resources"]
   uses = "popperized/ansible@master"
   args = [
     "-i", "workflows/cloudlab/geni/hosts",
@@ -51,8 +51,7 @@ action "run benchmarks" {
   uses = "./cbt"
   args = [
     "--archive", "workflows/cloudlab/results/",
-    "--conf", "",
-    "workflows/cloudlab/cbt/conf.yml"
+    "--conf", "workflows/cloudlab/cbt/conf.yml"
   ]
   env = {
     PDSH_SSH_ARGS_APPEND = "-o StrictHostKeyChecking=no"
