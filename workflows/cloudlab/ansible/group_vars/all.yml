@@ -1,0 +1,18 @@
+---
+ceph_origin: repository
+ceph_repository: community
+ceph_stable_release: luminous
+monitor_address: "192.168.1.0"
+public_network: "192.168.1.0/24"
+cluster_network: "192.168.1.0/24"
+cephx: false
+ceph_conf_local: true
+ceph_conf_overrides:
+    osd:
+        osd scrub during recovery: false
+    mon:
+        mon allow pool delete: true
+osd_scenario: lvm
+osd_objectstore: bluestore
+devices:
+  - '/dev/sdb'

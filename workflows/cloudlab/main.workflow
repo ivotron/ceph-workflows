@@ -24,31 +24,39 @@ action "allocate resources" {
   secrets = ["GENI_KEY_PASSPHRASE"]
 }
 
-#action "build packages" {
-#  uses = "popperized/deb@master"
-#  env = {
-#    DEB_PROJECT_DIR = "ceph/"
-#    DEB_INSTALL_DEPS_SCRIPT = "scripts/install_deps.sh",
-#  }
-#}
-
-action "deploy ceph" {
-  needs = ["allocate resources"]
-  uses = "popperized/ansible@master"
+action "download ceph-ansible" {
+  needs = "allocate resources"
+  uses = "veggiemonk/bin/git@master"
   args = [
-    "-i", "workflows/cloudlab/geni/hosts",
+    "clone", "--branch", "v3.2.18",
+    "https://github.com/ceph/ceph-ansible",
+    "workflows/cloudlab/ansible/ceph-ansible/"
+  ]
+}
+
+action "install ceph-ansible requirements" {
+  needs = ["download ceph-ansible"]
+  uses = "jefftriplett/python-actions@master"
+  args = "pip install -r workflows/cloudlab/ansible/ceph-ansible/requirements.txt"
+}
+
+action "deploy" {
+  needs = ["install ceph-ansible requirements"]
+  uses = "jefftriplett/python-actions@master"
+  args = [
+    "ansible-playbook", "-i", "workflows/cloudlab/geni/hosts",
     "workflows/cloudlab/ansible/playbook.yml"
   ]
   env {
-    ANSIBLE_GALAXY_FILE = "workflows/cloudlab/ansible/requirements.yml"
-    ANSIBLE_HOST_KEY_CHECKING = "False"
+    ANSIBLE_CONFIG = "workflows/cloudlab/ansible/ceph-ansible/ansible.cfg"
+    ANSIBLE_SSH_CONTROL_PATH = "/dev/shm/cp%%h-%%p-%%r"
   }
   secrets = ["ANSIBLE_SSH_KEY_DATA"]
 }
 
 action "run benchmarks" {
-  needs = "deploy ceph"
-  uses = "./cbt"
+  needs = "deploy"
+  uses = "./actions/cbt"
   args = [
     "--archive", "workflows/cloudlab/results/",
     "--conf", "workflows/cloudlab/cbt/conf.yml"
