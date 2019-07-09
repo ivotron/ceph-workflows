@@ -1,8 +1,8 @@
 import os
 
-# from geni.aggregate import cloudlab as agg
 # from geni.aggregate import apt as agg
-from geni.aggregate import protogeni as agg
+# from geni.aggregate import protogeni as agg
+from geni.aggregate import cloudlab as agg
 from geni.rspec import pg
 from geni import util
 
@@ -12,10 +12,11 @@ img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
 num_osds = 3
 
 # comment/uncomment aggregate imports above accordingly and then replace the
-# site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab) or agg.Apt
-# (apt). Check hardware availability and types at www.cloudlab.us/resinfo.php
-site = agg.UTAH_PG
-hw_type = 'd430'
+# site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab), agg.Apt
+# (apt) or agg.UTAH_PG (emulab). Check hardware availability and hardware types
+# at www.cloudlab.us/resinfo.php
+site = agg.Clemson
+hw_type = 'c6320'
 
 
 def add_baremetal_node(request, name, img, hardware_type):
@@ -34,7 +35,7 @@ def add_lan(request, nodes):
         iface = n.addInterface("if1")
         iface.component_id = "eth1"
         iface.addAddress(
-            pg.IPv4Address("192.168.1.{}".format(i), "255.255.255.0"))
+            pg.IPv4Address("192.168.1.{}".format(i+1), "255.255.255.0"))
         lan.addInterface(iface)
 
 
@@ -45,7 +46,7 @@ nodes = []
 nodes.append(add_baremetal_node(request, 'mon', img, hw_type))
 
 # add osd nodes to request
-for n in range(num_osds):
+for n in range(1, num_osds+1):
     nodes.append(add_baremetal_node(request, 'osd{}'.format(n), img, hw_type))
 
 # add lan to request
@@ -55,7 +56,7 @@ add_lan(request, nodes)
 ctx = util.loadContext(key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
 
 # create slice
-util.createSlice(ctx, experiment_name, renew_if_exists=True)
+util.createSlice(ctx, experiment_name, expiration=480, renew_if_exists=True)
 
 # create sliver on selected site
 manifest = util.createSliver(ctx, site, experiment_name, request)
@@ -65,7 +66,7 @@ manifest = util.createSliver(ctx, site, experiment_name, request)
 outdir = os.path.dirname(os.path.realpath(__file__))
 groups = {
   'mons': ['mon'],
-  'osds': ['osd{}'.format(n) for n in range(num_osds)]
+  'osds': ['osd{}'.format(n) for n in range(1, num_osds+1)]
 }
 util.toAnsibleInventory(manifest, groups=groups, hostsfile=outdir+'/hosts')
 manifest.writeXML(outdir+'/manifest.xml')

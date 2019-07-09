@@ -1,7 +1,6 @@
 import os
 
-# from geni.aggregate import cloudlab
-from geni.aggregate import protogeni
+from geni.aggregate import cloudlab as agg
 from geni import util
 
 
@@ -13,7 +12,6 @@ print("Available slices: {}".format(ctx.cf.listSlices(ctx).keys()))
 if util.sliceExists(ctx, experiment):
     print('Slice exists.')
     print('Removing sliver (errors are ignored)')
-    # util.deleteSliverExists(cloudlab.Clemson, ctx, experiment)
-    util.deleteSliverExists(protogeni.UTAH_PG, ctx, experiment)
+    util.deleteSliverExists(agg.Clemson, ctx, experiment)
 else:
     print("Slice does not exist.")

@@ -26,28 +26,22 @@ action "allocate resources" {
 
 action "download ceph-ansible" {
   needs = "allocate resources"
-  uses = "veggiemonk/bin/git@master"
-  args = [
-    "clone", "--branch", "v3.2.18",
-    "https://github.com/ceph/ceph-ansible",
-    "workflows/cloudlab/ansible/ceph-ansible/"
+  uses = "popperized/git@master"
+  runs = [
+    "sh", "-c",
+    "cd workflows/cloudlab/ansible && (git -C ceph-ansible/ fetch || git clone --branch v3.2.18 https://github.com/ceph/ceph-ansible)"
   ]
-}
-
-action "install ceph-ansible requirements" {
-  needs = ["download ceph-ansible"]
-  uses = "jefftriplett/python-actions@master"
-  args = "pip install -r workflows/cloudlab/ansible/ceph-ansible/requirements.txt"
 }
 
 action "deploy" {
-  needs = ["install ceph-ansible requirements"]
-  uses = "jefftriplett/python-actions@master"
+  needs = ["download ceph-ansible"]
+  uses = "popperized/ansible@v2.6"
   args = [
-    "ansible-playbook", "-i", "workflows/cloudlab/geni/hosts",
+    "-i", "workflows/cloudlab/geni/hosts",
     "workflows/cloudlab/ansible/playbook.yml"
   ]
   env {
+    ANSIBLE_PIP_FILE = "workflows/cloudlab/ansible/ceph-ansible/requirements.txt"
     ANSIBLE_CONFIG = "workflows/cloudlab/ansible/ceph-ansible/ansible.cfg"
     ANSIBLE_SSH_CONTROL_PATH = "/dev/shm/cp%%h-%%p-%%r"
   }
