@@ -56,7 +56,7 @@ add_lan(request, nodes)
 ctx = util.loadContext(key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
 
 # create slice
-util.createSlice(ctx, experiment_name, expiration=480, renew_if_exists=True)
+util.createSlice(ctx, experiment_name, expiration=180, renew_if_exists=True)
 
 # create sliver on selected site
 manifest = util.createSliver(ctx, site, experiment_name, request)

@@ -3,6 +3,15 @@
   when:
   - "lookup('env','CEPH_PURGE_CLUSTER') | default(false)"
 
+# install CBT requirements
+- hosts: all
+  tasks:
+  - name: install pdsh
+    package:
+      name: '{{ item }}'
+      state: present
+    with_items: [pdsh, iperf, itop, collectl]
+
 - hosts:
   - mons
   - osds

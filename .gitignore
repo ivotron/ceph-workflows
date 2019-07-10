@@ -4,3 +4,5 @@ venv
 workflows/cloudlab/ansible/ceph-ansible/
 *hosts
 *manifest.xml
+venv
+workflows/cloudlab/ansible/fetch/

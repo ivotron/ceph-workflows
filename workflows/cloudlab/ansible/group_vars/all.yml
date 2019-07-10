@@ -7,6 +7,8 @@ public_network: "192.168.1.0/24"
 cluster_network: "192.168.1.0/24"
 cephx: false
 ceph_conf_local: true
+generate_fsid: false
+fsid: 3eca8d23-12a7-40e0-b723-421e9b527959
 ceph_conf_overrides:
   osd:
     osd scrub during recovery: false

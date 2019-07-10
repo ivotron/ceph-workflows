@@ -1,0 +1,40 @@
+cluster:
+  user: {{ user }}
+
+  head:
+  - {{ head }}
+
+  clients:
+  {% for c in clients %}
+  - {{ c }}
+  {% endfor %}
+
+  mons:
+  {% for m in mons %}
+  - {{ m }}
+  {% endfor %}
+
+  osds:
+  {% for o in osds %}
+  - {{ o }}
+  {% endfor %}
+
+  osds_per_node: {{ osds_per_node }}
+
+  iterations: 3
+  rebuild_every_test: False
+  pool_profiles:
+    replicated:
+      pg_size: 128
+      pgp_size: 128
+      replication: 1
+
+benchmarks:
+  radosbench:
+    op_size: [16384, 65536, 262144, 1048576]
+    write_only: False
+    time: 10
+    concurrent_ops: [128]
+    concurrent_procs: 1
+    use_existing: True
+    pool_profile: replicated
