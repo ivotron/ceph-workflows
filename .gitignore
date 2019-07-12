@@ -1,1 +1,11 @@
 *.sw?
+.DS_Store
+workflows/cloudlab/ansible/ceph-ansible/
+workflows/cloudlab/ansible/ceph-ansible/
+workflows/cloudlab/ansible/fetch/
+workflows/cloudlab/ansible/ansible.log
+workflows/cloudlab/cbt/config.yml
+workflows/cloudlab/geni/hosts.yaml
+workflows/cloudlab/geni/manifest.xml
+workflows/cloudlab/results
+venv
