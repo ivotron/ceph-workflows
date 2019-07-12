@@ -21,7 +21,7 @@ img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
 # comment/uncomment aggregate imports above accordingly and then replace the
 # site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab), agg.Apt
 # (apt) or agg.UTAH_PG (emulab). Check hardware availability and hardware types
-# at www.cloudlab.us/resinfo.php
+# at https://www.cloudlab.us/resinfo.php
 site = agg.Clemson
 hw_type = 'c6320'
 
@@ -95,7 +95,8 @@ if cmd == 'destroy':
     sys.exit(0)
 
 # create slice
-util.createSlice(ctx, experiment_name, exp=expiration, renew_if_exists=True)
+util.createSlice(ctx, experiment_name, expiration=expiration,
+                 renew_if_exists=True)
 
 if cmd == 'renew':
     sys.exit(0)

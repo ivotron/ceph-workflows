@@ -30,7 +30,7 @@ action "build context" {
 }
 
 action "allocate resources" {
-  needs = "build context"
+  needs = ["build context", "download ceph-ansible", "install jinja2-cli"]
   uses = "popperized/geni/exec@master"
   args = ["workflows/cloudlab/geni/config.py", "apply"]
   secrets = ["GENI_KEY_PASSPHRASE"]
@@ -43,10 +43,7 @@ action "generate ansible inventory" {
 }
 
 action "deploy" {
-  needs = [
-    "download ceph-ansible",
-    "generate ansible inventory",
-  ]
+  needs = "generate ansible inventory", 
   uses = "popperized/ansible@v2.6"
   args = [
     "-i", "workflows/cloudlab/geni/hosts.yaml",
@@ -56,12 +53,13 @@ action "deploy" {
     ANSIBLE_PIP_FILE = "workflows/cloudlab/ansible/ceph-ansible/requirements.txt"
     ANSIBLE_CONFIG = "workflows/cloudlab/ansible/ceph-ansible/ansible.cfg"
     ANSIBLE_SSH_CONTROL_PATH = "/dev/shm/cp%%h-%%p-%%r"
+    ANSIBLE_LOG_PATH = "workflows/cloudlab/ansible/ansible.log"
   }
   secrets = ["ANSIBLE_SSH_KEY_DATA"]
 }
 
 action "generate cbt config" {
-  needs = ["install jinja2-cli", "generate ansible inventory"]
+  needs = ["deploy"],
   uses = "jefftriplett/python-actions@master"
   args = [
     "jinja2",
@@ -75,7 +73,7 @@ action "generate cbt config" {
 # The cluster fsid is hardcoded and arbitrarily selected, so it does
 # not change across multiple executions of the workflow
 action "run benchmarks" {
-  needs = ["generate cbt config", "deploy"]
+  needs = ["generate cbt config"]
   uses = "./actions/cbt"
   args = [
     "--archive", "./workflows/cloudlab/",
@@ -96,13 +94,13 @@ action "teardown" {
 }
 
 action "plot results" {
-  needs = "run benchmarks"
+  needs = "teardown"
   uses = "sh"
   args = "ls"
 }
 
 action "validate results" {
-  needs = ["plot results", "teardown"]
+  needs = ["plot results"]
   uses = "sh"
   runs = "ls"
 }
