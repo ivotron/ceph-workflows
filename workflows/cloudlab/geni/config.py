@@ -25,7 +25,8 @@ img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
 site = agg.Clemson
 hw_type = 'c6320'
 
-# grouping of nodes based on their ceph roles (note ordering of dict)
+# grouping of nodes based on their ceph roles (note: insertion order in groups
+# dictionary matters, as that's the order in which nodes are added to request)
 num_osds = 3
 groups = OrderedDict()
 groups['mons'] = ['mon']

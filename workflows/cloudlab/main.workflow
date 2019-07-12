@@ -39,7 +39,7 @@ action "allocate resources" {
 action "generate ansible inventory" {
   needs = "allocate resources"
   uses = "popperized/geni/exec@master"
-  args = "workflows/cloudlab/geni/manifest_to_inventory.py"
+  args = ["workflows/cloudlab/geni/config.py", "manifest-to-inventory"]
 }
 
 action "deploy" {
@@ -49,7 +49,7 @@ action "deploy" {
   ]
   uses = "popperized/ansible@v2.6"
   args = [
-    "-i", "workflows/cloudlab/geni/hosts",
+    "-i", "workflows/cloudlab/geni/hosts.yaml",
     "workflows/cloudlab/ansible/playbook.yml"
   ]
   env {
@@ -66,14 +66,14 @@ action "generate cbt config" {
   args = [
     "jinja2",
     "--format=yaml",
+    "--outfile", "workflows/cloudlab/cbt/config.yml",
     "workflows/cloudlab/cbt/config.yml.j2",
-    "workflows/cloudlab/geni/hosts.yaml",
-    ">workflows/cloudlab/cbt/config.yml"
+    "workflows/cloudlab/geni/hosts.yaml"
   ]
 }
 
-# The cluster fsid 3eca8d23-12a7-40e0-b723-421e9b527959 is
-# hardcoded and arbitrarily selected (see ansible/group_vars/all.yml)
+# The cluster fsid is hardcoded and arbitrarily selected, so it does
+# not change across multiple executions of the workflow
 action "run benchmarks" {
   needs = ["generate cbt config", "deploy"]
   uses = "./actions/cbt"

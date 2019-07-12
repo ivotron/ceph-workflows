@@ -1,25 +1,17 @@
 cluster:
-  user: {{ user }}
-
+  user: {{ hosts['all']['mon']['ansible_user'] }}
   head:
-  - {{ head }}
-
+  - {{ hosts['all']['mon']['ansible_host'] }}
   clients:
-  {% for c in clients %}
-  - {{ c }}
-  {% endfor %}
-
+  - {{ hosts['all']['mon']['ansible_host'] }}
   mons:
-  {% for m in mons %}
-  - {{ m }}
-  {% endfor %}
-
+  - {{ hosts['all']['mon']['ansible_host'] }}
   osds:
-  {% for o in osds %}
-  - {{ o }}
-  {% endfor %}
+  {%- for o in hosts['children']['osds']['hosts'] %}
+  - {{ hosts['all'][o]['ansible_host'] }}
+  {%- endfor %}
 
-  osds_per_node: {{ osds_per_node }}
+  osds_per_node: 1
 
   iterations: 3
   rebuild_every_test: False
@@ -33,7 +25,7 @@ benchmarks:
   radosbench:
     op_size: [16384, 65536, 262144, 1048576]
     write_only: False
-    time: 10
+    time: 300
     concurrent_ops: [128]
     concurrent_procs: 1
     use_existing: True
