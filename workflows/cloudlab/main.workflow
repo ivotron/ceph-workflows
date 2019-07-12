@@ -92,15 +92,3 @@ action "teardown" {
   args = ["workflows/cloudlab/geni/config.py", "destroy"]
   secrets = ["GENI_KEY_PASSPHRASE"]
 }
-
-action "plot results" {
-  needs = "teardown"
-  uses = "sh"
-  args = "ls"
-}
-
-action "validate results" {
-  needs = ["plot results"]
-  uses = "sh"
-  runs = "ls"
-}
