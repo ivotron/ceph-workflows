@@ -38,7 +38,8 @@ groups['osds'] = ['osd{}'.format(n) for n in range(1, num_osds+1)]
 
 # get cmd
 if len(sys.argv) != 2:
-    raise Exception("Expecting only 1 argument request.py")
+    raise Exception(
+        "Expecting only 1 argument: apply, destroy, renew or inventory")
 cmd = sys.argv[1]
 
 # output directory where to write files
@@ -79,7 +80,7 @@ def create_request(img, hw_type, groups):
     return request
 
 
-if cmd == 'manifest-to-inventory':
+if cmd == 'inventory':
     print('Creating Ansible inventory from GENI manifest.')
     manifest_path = outdir+'/manifest.xml'
     util.xmlManifestToAnsibleInventory(
