@@ -19,14 +19,14 @@ action "build context" {
 action "allocate resources" {
   needs = "build context"
   uses = "popperized/geni/exec@master"
-  args = ["deploy/cloudlab/config.py", "apply"]
+  args = ["deploy/cloudlab/geni_config.py", "apply"]
   secrets = ["GENI_KEY_PASSPHRASE"]
 }
 
 action "generate ansible inventory" {
   needs = "allocate resources"
   uses = "popperized/geni/exec@master"
-  args = ["deploy/cloudlab/config.py", "inventory"]
+  args = ["deploy/cloudlab/geni_config.py", "inventory"]
 
 action "download ceph-ansible" {
   needs = "generate ansible inventory"
@@ -41,7 +41,7 @@ action "deploy" {
   needs = "download ceph-ansible"
   uses = "popperized/ansible@v2.6"
   args = [
-    "-i", "deploy/cloudlab/geni/hosts.yaml",
+    "-i", "deploy/cloudlab/hosts.yaml",
     "deploy/cloudlab/ansible/playbook.yml"
   ]
   env {
@@ -57,6 +57,6 @@ action "deploy" {
 #action "teardown" {
 #  needs = "<NAME OF PREVIOUS ACTION>"
 #  uses = "popperized/geni/exec@master"
-#  args = ["deploy/cloudlab/config.py", "destroy"]
+#  args = ["deploy/cloudlab/geni_config.py", "destroy"]
 #  secrets = ["GENI_KEY_PASSPHRASE"]
 #}

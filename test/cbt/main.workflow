@@ -15,7 +15,7 @@ action "generate cbt config" {
     "--format=yaml",
     "--outfile", "bench/cbt/config.yml",
     "bench/cbt/config.yml.j2",
-    "bench/cbt/ansible/hosts.yaml"
+    "bench/cbt/hosts.yaml"
   ]
 }
 
