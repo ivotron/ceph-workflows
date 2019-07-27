@@ -1,4 +1,4 @@
-# Deployment workflows
+# Deployment Workflows
 
 These workflows deploy Ceph on multiple infrastructures using 
 [`ceph-ansible`][ceph-ansible]. All of them generate an Ansible 

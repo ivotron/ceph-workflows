@@ -23,7 +23,7 @@ action "generate cbt config" {
 # not change across multiple executions of the workflow
 action "run benchmarks" {
   needs = ["generate cbt config"]
-  uses = "./actions/cbt"
+  uses = "./workflows/bench/cbt/action"
   args = [
     "--archive", "./workflows/bench/cbt/",
     "--conf", "./workflows/bench/cbt/ansible/fetch/3eca8d23-12a7-40e0-b723-421e9b527959/etc/ceph/ceph.conf",

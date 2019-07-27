@@ -1,3 +1,2 @@
-# Ceph Development Workflows
+# Development Workflows
 
-These workflows aid in multiple development tasks.

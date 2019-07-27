@@ -1,2 +1,2 @@
-# Benchmarking Ceph
+# Benchmarking Workflows
 
