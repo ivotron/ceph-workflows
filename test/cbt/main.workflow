@@ -13,9 +13,9 @@ action "generate cbt config" {
   args = [
     "jinja2",
     "--format=yaml",
-    "--outfile", "bench/cbt/config.yml",
-    "bench/cbt/config.yml.j2",
-    "bench/cbt/hosts.yaml"
+    "--outfile", "test/cbt/config.yml",
+    "test/cbt/config.yml.j2",
+    "test/cbt/hosts.yaml"
   ]
 }
 
@@ -23,11 +23,11 @@ action "generate cbt config" {
 # not change across multiple executions of the workflow
 action "run benchmarks" {
   needs = ["generate cbt config"]
-  uses = "./bench/cbt/action"
+  uses = "./test/cbt/action"
   args = [
-    "--archive", "./bench/cbt/",
-    "--conf", "./bench/cbt/ansible/fetch/3eca8d23-12a7-40e0-b723-421e9b527959/etc/ceph/ceph.conf",
-    "bench/cbt/config.yml"
+    "--archive", "./test/cbt/",
+    "--conf", "./test/cbt/ansible/fetch/3eca8d23-12a7-40e0-b723-421e9b527959/etc/ceph/ceph.conf",
+    "test/cbt/config.yml"
   ]
   env = {
     PDSH_SSH_ARGS_APPEND = "-o StrictHostKeyChecking=no"
