@@ -1,0 +1,14 @@
+workflow "build ceph" {
+  resolves = "build"
+}
+
+action "build" {
+  uses = "popperized/cmake@ubuntu-18.04"
+  args = "vstart"
+  env = {
+    CMAKE_PROJECT_DIR = "./build/ceph"
+    CMAKE_INSTALL_DEPS_SCRIPT = "install-deps.sh"
+    CMAKE_FLAGS = "-DCMAKE_BUILD_TYPE=MinSizeRel -DWITH_RBD=OFF -DWITH_CEPHFS=OFF -DWITH_RADOSGW=OFF -DWITH_LEVELDB=OFF -DWITH_MANPAGE=OFF -DWITH_RDMA=OFF -DWITH_OPENLDAP=OFF -DWITH_FUSE=OFF -DWITH_LIBCEPHFS=OFF -DWITH_KRBD=OFF -DWITH_LTTNG=OFF -DWITH_BABELTRACE=OFF -DWITH_SYSTEMD=OFF -DWITH_SPDK=OFF -DWITH_CCACHE=ON -DBOOST_J=2"
+    CMAKE_BUILD_THREADS = "16"
+  }
+}

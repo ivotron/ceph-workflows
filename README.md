@@ -1,10 +1,8 @@
-# Github Actions for Ceph
+# Github Actions Workflows for Ceph
 
-This repository contains GitHub Actions for Ceph, for performing 
-common tasks such as building, creating docker images, deploying and 
-benchmarking.
+This repository contains [GitHub Actions][gha] workflows for 
+[building](./build), [deploying](./deploy) and 
+[testing](./test) the [Ceph storage platform][ceph].
 
-## Usage
-
-Usage information for individual commands can be found in their 
-respective directories.
+[gha]: https://developer.github.com/actions/managing-workflows/workflow-configuration-options/#example-workflow
+[ceph]: https://ceph.com
