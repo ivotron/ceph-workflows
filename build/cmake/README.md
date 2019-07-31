@@ -2,18 +2,18 @@
 
 The [workflow in this folder](./main.workflow) compiles Ceph using the 
 [CMake action][cmake]. It takes a relative short amount of time to 
-execute since it only compiles the Ceph monitor and OSD daemons. It 
+execute since only compiles the Ceph monitor and OSD daemons. It 
 consists of a single action and takes CMake variables via the `env` 
 attribute of action blocks.
 
 ## Local Development
 
-This workflow can be used to develop and test Ceph locally:
+The workflow can be used to develop and test Ceph locally:
 
 ```bash
-git clone --recursive https://github.com/popperized/ceph-actions
+git clone --recursive https://github.com/popperized/ceph
 
-cd ceph-actions/workflows/dev/cmake
+cd ceph/dev/cmake
 ```
 
 Modify the CMake options specified in `env` attribute of the workflow 
@@ -36,7 +36,7 @@ instantiating a container from the container image associated to the
 `build` action. For example:
 
 ```bash
-cd ceph-actions/workflows/dev
+cd ceph/dev
 
 docker run --rm -ti --entrypoint=/bin/bash \
   --volume $PWD:$PWD \
