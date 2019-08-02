@@ -1,5 +1,5 @@
 variable "PACKET_API_KEY" {}
-variable "OSD_COUNT" { default = 1 }
+variable "OSD_COUNT" { default = 2 }
 provider "packet" {
   auth_token = "${var.PACKET_API_KEY}"
 }
@@ -19,10 +19,9 @@ resource "packet_device" "monitor" {
     command = <<EOT
 cat <<EOF >  ./deploy/packet/ansible/hosts.yml
 all:
-    children:
-        monitor:
-            ${self.access_public_ipv4}
-        osds:
+  hosts:
+    mon:
+      ansible_host: ${self.access_public_ipv4}
 EOT
 
   }
@@ -30,7 +29,7 @@ EOT
 
 resource "packet_device" "osd" {
   count = "${var.OSD_COUNT}"
-  hostname="osd.${count.index}"
+  hostname="osd.${count.index+1}"
   project_id       = "${local.project_id}"
   operating_system = "ubuntu_18_04"
   plan = "t1.small.x86"
@@ -38,10 +37,32 @@ resource "packet_device" "osd" {
   facilities = ["ewr1"]
   provisioner "local-exec" {
     command = <<EOT
-    sleep ${count.index+5}s && \
-    cat <<EOF >> ./deploy/packet/ansible/hosts.yml
-            ${self.access_public_ipv4}
-    EOT
+sleep ${count.index+5}s && \
+cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+    osd${count.index+1}:
+      ansible_host: ${self.access_public_ipv4}
+EOT
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+sleep ${count.index+10}s
+if [[ ${count.index+1} -eq ${var.OSD_COUNT} ]]; then
+cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+  children:
+    mons:
+      hosts:
+        mon:
+    osds:
+      hosts:
+EOF
+for i in $(seq 1 ${var.OSD_COUNT}); do
+cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+        osd$i:
+EOF
+done
+fi
+EOT
   }
   depends_on = ["packet_device.monitor"]
 }
