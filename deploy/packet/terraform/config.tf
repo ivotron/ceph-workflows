@@ -20,7 +20,7 @@ resource "packet_device" "monitor" {
 cat <<EOF >  ./deploy/packet/ansible/hosts.yml
 all:
   hosts:
-    mon:
+    mon1:
       ansible_host: ${self.access_public_ipv4}
 EOT
 
@@ -52,7 +52,7 @@ cat <<EOF >> ./deploy/packet/ansible/hosts.yml
   children:
     mons:
       hosts:
-        mon:
+        mon1:
     osds:
       hosts:
 EOF
