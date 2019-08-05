@@ -4,3 +4,6 @@
 [submodule "deploy/ceph-deploy-ansible"]
 	path = deploy/ceph-deploy-ansible
 	url = https://github.com/KDahlgren/ceph-deploy-ansible.git
+[submodule "deploy/ceph-deploy-popper"]
+	path = deploy/ceph-deploy-popper
+	url = https://github.com/KDahlgren/ceph-deploy-popper.git
