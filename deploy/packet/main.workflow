@@ -1,6 +1,6 @@
 workflow "packet" {
   on = "push"
-  resolves = ["terraform apply"]
+  resolves = "deploy"
 }
 
 action "terraform init" {
@@ -34,3 +34,38 @@ action "terraform apply" {
     TF_ACTION_COMMENT = "false"
   }
 }
+
+action "download ceph-ansible" {
+  needs = "terraform apply"
+  uses = "popperized/git@master"
+  runs = [
+    "sh", "-c",
+    "cd deploy/ && (git -C ceph-ansible/ fetch || git clone --branch v3.2.18 https://github.com/ceph/ceph-ansible)"
+  ]
+}
+
+action "deploy" {
+  needs = "download ceph-ansible"
+  uses = "popperized/ansible@v2.6"
+  args = [
+    "-i", "deploy/packet/hosts.yaml",
+    "deploy/packet/ansible/playbook.yml"
+  ]
+  env {
+    ANSIBLE_PIP_FILE = "deploy/ceph-ansible/requirements.txt"
+    ANSIBLE_CONFIG = "deploy/ceph-ansible/ansible.cfg"
+    ANSIBLE_SSH_CONTROL_PATH = "/dev/shm/cp%%h-%%p-%%r"
+    ANSIBLE_LOG_PATH = "deploy/packet/ansible/ansible.log"
+  }
+  secrets = ["ANSIBLE_SSH_KEY_DATA"]
+}
+
+## run this action at the end to release allocated resources
+#action "teardown" {
+#  needs = "<NAME OF PREVIOUS ACTION>"
+#  uses = "innovationnorway/github-action-terraform@master"
+#  args = ["destroy",
+#            "-auto-approve",
+#            "./deploy/packet/terraform"]
+#  secrets = ["TF_VAR_PACKET_API_KEY"]
+#}

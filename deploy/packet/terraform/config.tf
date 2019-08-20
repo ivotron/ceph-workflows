@@ -17,7 +17,7 @@ resource "packet_device" "monitor" {
   facilities = ["ewr1"]
   provisioner "local-exec" {
     command = <<EOT
-cat <<EOF >  ./deploy/packet/ansible/hosts.yml
+cat <<EOF >  ./deploy/packet/hosts.yaml
 all:
   hosts:
     mon1:
@@ -38,7 +38,7 @@ resource "packet_device" "osd" {
   provisioner "local-exec" {
     command = <<EOT
 sleep ${count.index+5}s && \
-cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+cat <<EOF >> ./deploy/packet/hosts.yaml
     osd${count.index+1}:
       ansible_host: ${self.access_public_ipv4}
 EOT
@@ -48,7 +48,7 @@ EOT
     command = <<EOT
 sleep ${count.index+10}s
 if [[ ${count.index+1} -eq ${var.OSD_COUNT} ]]; then
-cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+cat <<EOF >> ./deploy/packet/hosts.yaml
   children:
     mons:
       hosts:
@@ -57,7 +57,7 @@ cat <<EOF >> ./deploy/packet/ansible/hosts.yml
       hosts:
 EOF
 for i in $(seq 1 ${var.OSD_COUNT}); do
-cat <<EOF >> ./deploy/packet/ansible/hosts.yml
+cat <<EOF >> ./deploy/packet/hosts.yaml
         osd$i:
 EOF
 done
