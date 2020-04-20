@@ -2,7 +2,7 @@ steps:
 
 - id: allocate resources
   uses: docker://popperized/geni:v0.9.9.2
-  args: ['./geni/config.py', 'apply']  # writes to geni/manifest.xml
+  args: ['geni/multinode.py', 'apply']  # writes to geni/manifest.xml
   secrets:
   - GENI_FRAMEWORK
   - GENI_PROJECT
@@ -14,7 +14,7 @@ steps:
 - id: generate ansible inventory
   uses: docker://popperized/geni:v0.9.9.2
   runs: 'python'
-  args: ['geni/config.py', 'inventory'] # convert geni/manifest.xml to ansible/hosts.yaml
+  args: ['geni/multinode.py', 'get-inventory'] # convert geni/manifest.xml to ansible/hosts.yaml
 
 - id: clone ceph-ansible repo
   uses: docker://alpine/git:v2.24.1
@@ -52,7 +52,7 @@ steps:
 
 #- id: release resources
 #  uses: docker://popperized/geni:v0.9.9.2
-#  args: ['./geni/config.py', 'destroy']
+#  args: ['geni/multinode.py', 'destroy']
 #  secrets:
 #  - GENI_FRAMEWORK
 #  - GENI_PROJECT
