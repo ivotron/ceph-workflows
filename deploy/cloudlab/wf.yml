@@ -1,0 +1,62 @@
+steps:
+
+- id: allocate resources
+  uses: docker://popperized/geni:v0.9.9.2
+  args: ['./geni/config.py', 'apply']  # writes to geni/manifest.xml
+  secrets:
+  - GENI_FRAMEWORK
+  - GENI_PROJECT
+  - GENI_USERNAME
+  - GENI_KEY_PASSPHRASE
+  - GENI_PUBKEY_DATA
+  - GENI_CERT_DATA
+
+- id: generate ansible inventory
+  uses: docker://popperized/geni:v0.9.9.2
+  runs: 'python'
+  args: ['geni/config.py', 'inventory'] # convert geni/manifest.xml to ansible/hosts.yaml
+
+- id: clone ceph-ansible repo
+  uses: docker://alpine/git:v2.24.1
+  runs: sh
+  args:
+  - -c
+  - |
+    mkdir -p ./ansible/
+    if [[ ! -d ./ansible/ceph-ansible ]]; then
+       git clone --depth=1 --branch=stable-3.2 https://github.com/ceph/ceph-ansible ./ansible/ceph-ansible
+    fi
+
+# the version of ceph-ansible (checked out above) determines which version of
+# ansible to use: https://docs.ceph.com/ceph-ansible/master/#releases
+- id: deploy
+  uses: docker://popperized/ansible:2.6.20
+  runs: bash
+  args:
+  - -c
+  - |
+    # ceph-ansible assumes ansible-playbook is executed within its project root,
+    # so we copy the playbook/vars, cd into the ceph-ansible folder and then
+    # execute ansible-playbook from there, but via the entrypoint.sh of the
+    # image since it knows how to properly deal with SSH keys
+    cd ansible/
+    cp -r playbook.yml purge_cluster.yml group_vars/ ceph-ansible/
+    cd ceph-ansible/
+    /entrypoint.sh -i ../hosts.yaml playbook.yml
+  env:
+    ANSIBLE_LOG_PATH: ../ansible.log
+    ANSIBLE_SSH_CONTROL_PATH: /dev/shm/cp%%h-%%p-%%r
+    ANSIBLE_HOST_KEY_CHECKING: false
+  secrets:
+  - ANSIBLE_SSH_KEY_DATA
+
+#- id: release resources
+#  uses: docker://popperized/geni:v0.9.9.2
+#  args: ['./geni/config.py', 'destroy']
+#  secrets:
+#  - GENI_FRAMEWORK
+#  - GENI_PROJECT
+#  - GENI_USERNAME
+#  - GENI_KEY_PASSPHRASE
+#  - GENI_PUBKEY_DATA
+#  - GENI_CERT_DATA
