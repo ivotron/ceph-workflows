@@ -1,6 +1,5 @@
+import cloudlab_cmd
 from collections import OrderedDict
-
-from .. import cloudlab_cmd
 
 # name of experiment to use to identify this allocation
 experiment_name = 'multi-node-ceph-benchmarks'
