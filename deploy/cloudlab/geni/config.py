@@ -3,9 +3,9 @@ import sys
 
 from collections import OrderedDict
 
-# from geni.aggregate import apt as agg
-# from geni.aggregate import protogeni as agg
-from geni.aggregate import cloudlab as agg
+from geni.aggregate import apt
+from geni.aggregate import protogeni
+from geni.aggregate import cloudlab
 from geni.rspec import pg
 from geni import util
 
@@ -18,18 +18,21 @@ expiration = 180
 # OS image to use
 img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
 
-# comment/uncomment aggregate imports above accordingly and then replace the
-# site variable with agg.Clemson, agg.Utah, agg.Wisconsin (cloudlab), agg.Apt
-# (apt) or agg.UTAH_PG (emulab). Check hardware availability and hardware types
-# at https://www.cloudlab.us/resinfo.php
-site = agg.Clemson
+# replace the site variable with cloudlab.Clemson, cloudlab.Utah,
+# cloudlab.Wisconsin, apt.Apt or protogeni.UTAH_PG. Check hardware availability
+# and hardware types at https://www.cloudlab.us/resinfo.php
+site = cloudlab.Clemson
 hw_type = 'c6320'
+
+# whether to create a lan
+with_lan = True
 
 # grouping of nodes based on their ceph roles (note: insertion order in groups
 # dictionary matters, as that's the order in which nodes are added to request)
 num_osds = 3
 groups = OrderedDict()
 groups['mons'] = ['mon']
+groups['mgrs'] = ['mon']
 groups['osds'] = ['osd{}'.format(n) for n in range(1, num_osds+1)]
 
 ##############################################################################
@@ -42,20 +45,18 @@ if len(sys.argv) != 2:
         "Expecting only 1 argument: apply, destroy, renew or inventory")
 cmd = sys.argv[1]
 
-# output directory where to write files
-outdir = os.path.dirname(os.path.realpath(__file__))
+out_dir = os.getcwd()
 
 
-def add_baremetal_node(request, name, img, hardware_type):
+def create_baremetal_node(name, img, hardware_type):
     node = pg.RawPC(name)
     node.disk_image = img
     node.hardware_type = hardware_type
-    request.addResource(node)
     return node
 
 
-def add_lan(request, nodes):
-    lan = request.LAN("lan")
+def create_lan(nodes):
+    lan = pg.LAN("lan")
 
     # create an interface for each node and add it to the lan
     for i, n in enumerate(nodes):
@@ -65,31 +66,53 @@ def add_lan(request, nodes):
             pg.IPv4Address("192.168.1.{}".format(i+1), "255.255.255.0"))
         lan.addInterface(iface)
 
+    return lan
 
-def create_request(img, hw_type, groups):
+
+def create_request(img, hw_type, groups, with_lan):
     request = pg.Request()
     nodes = []
+    processed = []
 
     for _, group in groups.items():
         for node_name in group:
-            nodes.append(add_baremetal_node(request, node_name, img, hw_type))
+            if node_name in processed:
+                # nodes can appear on multiple groups, so we check and skip
+                # creating another request for the same node
+                continue
+            node = create_baremetal_node(node_name, img, hw_type)
+            nodes.append(node)
+            processed.append(node_name)
+            request.addResource(node)
 
     # add lan to request
-    add_lan(request, nodes)
+    if with_lan:
+        lan = create_lan(nodes)
+        request.addResource(lan)
 
     return request
 
 
 if cmd == 'inventory':
     print('Creating Ansible inventory from GENI manifest.')
-    manifest_path = outdir+'/manifest.xml'
+    geni_out_dir = out_dir + '/geni'
+    ansible_out_dir = out_dir + '/ansible'
+    if not os.path.isdir(geni_out_dir):
+        os.makedirs(geni_out_dir)
+    if not os.path.isdir(ansible_out_dir):
+        os.makedirs(ansible_out_dir)
+    manifest_path = geni_out_dir+'/manifest.xml'
     util.xmlManifestToAnsibleInventory(
-        manifest_path, groups=groups, hostsfile=outdir+'/hosts', format='yaml'
+        manifest_path,
+        groups=groups,
+        hostsfile=ansible_out_dir+'/hosts',
+        format='yaml'
     )
     sys.exit(0)
 
 # load context
-ctx = util.loadContext(key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
+ctx = util.loadContext(path='/geni-context.json',
+                       key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
 
 if cmd == 'destroy':
     util.deleteSliverExists(site, ctx, experiment_name)
@@ -106,10 +129,10 @@ if cmd != 'apply':
     print("Unknown command '{}'".format(cmd))
     sys.exit(1)
 
-request = create_request(img, hw_type, groups)
+request = create_request(img, hw_type, groups, with_lan)
 
 # create sliver on selected site
 manifest = util.createSliver(ctx, site, experiment_name, request)
 
 # write manifest
-manifest.writeXML(outdir+'/manifest.xml')
+manifest.writeXML(out_dir+'/geni/manifest.xml')
