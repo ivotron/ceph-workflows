@@ -1,8 +1,8 @@
-# Github Actions Workflows for Ceph
+# Popper workflows for Ceph
 
-This repository contains [GitHub Actions][gha] workflows for 
-[building](./build), [deploying](./deploy) and 
-[testing](./test) the [Ceph storage platform][ceph].
+This repository contains [Popper workflows][pp] for 
+[deploying](./deploy) and [testing](./test) the [Ceph storage 
+platform][ceph]. For usage, see the README in each subfolder.
 
-[gha]: https://developer.github.com/actions/managing-workflows/workflow-configuration-options/#example-workflow
+[pp]: https://github.com/systemslab/popper
 [ceph]: https://ceph.com
