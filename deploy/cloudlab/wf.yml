@@ -2,7 +2,8 @@ steps:
 
 - id: allocate resources
   uses: docker://popperized/geni:v0.9.9.2
-  args: ['geni/multinode.py', 'apply']  # writes to geni/manifest.xml
+  # writes to geni/manifest.xml
+  args: ['geni/config.py', 'apply']
   secrets:
   - GENI_FRAMEWORK
   - GENI_PROJECT
@@ -13,8 +14,10 @@ steps:
 
 - id: generate ansible inventory
   uses: docker://popperized/geni:v0.9.9.2
+  # override the entrypoint to image so we don't need to provide credentials
   runs: 'python'
-  args: ['geni/multinode.py', 'get-inventory'] # convert geni/manifest.xml to ansible/hosts.yaml
+  # convert geni/manifest.xml to ansible/hosts.yaml
+  args: ['geni/config.py', 'get-inventory']
 
 - id: clone ceph-ansible repo
   uses: docker://alpine/git:v2.24.1
@@ -40,9 +43,9 @@ steps:
     # execute ansible-playbook from there, but via the entrypoint.sh of the
     # image since it knows how to properly deal with SSH keys
     cd ansible/
-    cp -r playbook.yml purge_cluster.yml group_vars/ ceph-ansible/
+    cp -r playbooks/* group_vars/ ceph-ansible/
     cd ceph-ansible/
-    /entrypoint.sh -i ../hosts.yaml playbook.yml
+    /entrypoint.sh -i ../hosts.yaml deploy-mons-and-osds.yml
   env:
     ANSIBLE_LOG_PATH: ../ansible.log
     ANSIBLE_SSH_CONTROL_PATH: /dev/shm/cp%%h-%%p-%%r
@@ -52,7 +55,7 @@ steps:
 
 #- id: release resources
 #  uses: docker://popperized/geni:v0.9.9.2
-#  args: ['geni/multinode.py', 'destroy']
+#  args: ['geni/config.py', 'destroy']
 #  secrets:
 #  - GENI_FRAMEWORK
 #  - GENI_PROJECT
