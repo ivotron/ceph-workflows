@@ -93,8 +93,7 @@ def run(experiment, expiration, site_name, groups, hw_type, img, with_lan):
         sys.exit(0)
 
     # load context
-    ctx = util.loadContext(path='/geni-context.json',
-                           key_passphrase=os.environ['GENI_KEY_PASSPHRASE'])
+    ctx = util.loadCtx()
 
     if cmd == 'destroy':
         util.deleteSliverExists(site, ctx, experiment)
