@@ -1,5 +1,4 @@
 import cloudlab_cmd
-from collections import OrderedDict
 
 # name of experiment to use to identify this allocation
 experiment_name = 'popper-ceph'
@@ -14,24 +13,24 @@ img = "urn:publicid:IDN+clemson.cloudlab.us+image+schedock-PG0:ubuntu18-docker"
 site = 'clemson'
 hw_type = 'c6320'
 
+# create an internal network
+with_lan = True
+
 ############
 # multi-node
 ############
-with_lan = True
-
-# grouping of nodes based on their ceph roles (note: insertion order in groups
-# dictionary matters, as that's the order in which nodes are added to request)
+# grouping of nodes based on their ceph roles
 num_osds = 3
-groups = OrderedDict()
-groups['mons'] = ['mon']
-groups['mgrs'] = ['mon']
-groups['osds'] = ['osd{}'.format(n) for n in range(1, num_osds+1)]
+groups = {
+   'mons': ['mon1'],
+   'mgrs': ['mon1'],
+   'osds': ['osd{}'.format(n) for n in range(1, num_osds+1)],
+}
 
 
-##############
-## single node
-##############
-#with_lan = False
+#############
+# single node
+#############
 #groups = {
 #    'mons': ['onlynode'],
 #    'osds': ['onlynode'],
